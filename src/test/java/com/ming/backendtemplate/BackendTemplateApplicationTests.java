@@ -1,20 +1,19 @@
 package com.ming.backendtemplate;
 
-import jakarta.annotation.Resource;
+import com.ming.convert.UserConvert;
+import com.ming.dto.UserDTO;
+import com.ming.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.StringRedisTemplate;
 
 @SpringBootTest
 class BackendTemplateApplicationTests {
 
-    @Resource
-    StringRedisTemplate template;
-
     @Test
     void contextLoads() {
-        template.opsForValue().set("springbootTest", "ok");
-        System.out.println(template.opsForValue().get("springbootTest"));
+        User user = new User(1L, "ming", "123456", "ming@qq.com", 0);
+        UserDTO userDTO = UserConvert.INSTANCE.entity2dto(user);
+        System.out.println(userDTO);
     }
 
 }

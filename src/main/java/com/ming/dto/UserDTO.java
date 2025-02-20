@@ -1,4 +1,4 @@
-package com.ming.entity;
+package com.ming.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,9 +7,9 @@ import lombok.ToString;
 
 @Data
 @ToString
-@AllArgsConstructor
 @NoArgsConstructor
-public class User {
+@AllArgsConstructor
+public class UserDTO {
     // 用户ID
     private Long id;
     // 用户名
@@ -20,4 +20,6 @@ public class User {
     private String email;
     // 删除状态
     private Integer deleted;
+    // 验证码
+    private String validateCode;
 }

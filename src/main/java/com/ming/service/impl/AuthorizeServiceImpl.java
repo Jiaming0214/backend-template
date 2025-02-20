@@ -1,5 +1,6 @@
 package com.ming.service.impl;
 
+import com.ming.dto.UserDTO;
 import com.ming.entity.User;
 import com.ming.mapper.UserMapper;
 import com.ming.service.AuthorizeService;
@@ -11,6 +12,7 @@ import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -28,6 +30,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     private String SENDER_FROM;
     @Resource
     private StringRedisTemplate template;
+    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -51,11 +54,14 @@ public class AuthorizeServiceImpl implements AuthorizeService {
      * 4.用户注册时再从Redis中取出键值对，进行比对
      */
     @Override
-    public Boolean sendValidateEmail(String email, String sessionId) {
+    public String sendValidateEmail(String email, String sessionId) {
         String key = "email:" + sessionId + ":" + email;
-        if(Boolean.TRUE.equals(template.hasKey(key))) {
+        if (Boolean.TRUE.equals(template.hasKey(key))) {
             Long expireTime = Optional.ofNullable(template.getExpire(key)).orElse(0L);
-            if(expireTime > 120) return Boolean.FALSE;
+            if (expireTime > 120) return "请求频繁，请稍后再试";
+        }
+        if (userMapper.findByUsernameOrEmail(email) != null) {
+            return "此邮箱已被注册";
         }
         // 生成验证码
         Random random = new Random();
@@ -69,10 +75,32 @@ public class AuthorizeServiceImpl implements AuthorizeService {
             mailSender.send(message);
             template.opsForValue().set(key, String.valueOf(code));
             template.expire(key, 3, TimeUnit.MINUTES);
-        }catch (MailException e) {
+            return null;
+        } catch (MailException e) {
             e.printStackTrace();
-            return Boolean.FALSE;
+            return "邮箱有误，发送失败";
         }
-        return Boolean.TRUE;
+    }
+
+    @Override
+    public String validateAndRegister(UserDTO userDTO, String sessionId) {
+        String key = "email:" + sessionId + ":" + userDTO.getEmail();
+        if (Boolean.TRUE.equals(template.hasKey(key))) {
+            String code = template.opsForValue().get(key);
+            if (code == null) return "验证码失效，请重新获取验证码";
+            if (code.equals(userDTO.getValidateCode())) {
+                userDTO.setPassword(encoder.encode(userDTO.getPassword()));
+                if (userMapper.createUser(userDTO) > 0) {
+                    template.delete(key); // 删去验证码信息
+                    return null;
+                }else {
+                    return "系统内部错误，请联系管理员";
+                }
+            } else {
+                return "验证码错误，请核对";
+            }
+        } else {
+            return "验证码失效，请先获取验证码";
+        }
     }
 }
