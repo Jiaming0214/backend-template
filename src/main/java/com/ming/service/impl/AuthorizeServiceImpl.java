@@ -54,13 +54,17 @@ public class AuthorizeServiceImpl implements AuthorizeService {
      * 4.用户注册时再从Redis中取出键值对，进行比对
      */
     @Override
-    public String sendValidateEmail(String email, String sessionId) {
-        String key = "email:" + sessionId + ":" + email;
+    public String sendValidateEmail(String email, String sessionId, Boolean hasUser) {
+        String key = "email:" + sessionId + ":" + email + ":" + hasUser;
         if (Boolean.TRUE.equals(template.hasKey(key))) {
             Long expireTime = Optional.ofNullable(template.getExpire(key)).orElse(0L);
             if (expireTime > 120) return "请求频繁，请稍后再试";
         }
-        if (userMapper.findByUsernameOrEmail(email) != null) {
+        User user = userMapper.findByUsernameOrEmail(email);
+        if(hasUser && user == null) {
+            return "没有用此邮箱注册的用户信息";
+        }
+        if(!hasUser && user != null) {
             return "此邮箱已被注册";
         }
         // 生成验证码
@@ -84,7 +88,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 
     @Override
     public String validateAndRegister(UserDTO userDTO, String sessionId) {
-        String key = "email:" + sessionId + ":" + userDTO.getEmail();
+        String key = "email:" + sessionId + ":" + userDTO.getEmail() + ":false";
         if (Boolean.TRUE.equals(template.hasKey(key))) {
             String code = template.opsForValue().get(key);
             if (code == null) return "验证码失效，请重新获取验证码";
@@ -103,4 +107,28 @@ public class AuthorizeServiceImpl implements AuthorizeService {
             return "验证码失效，请先获取验证码";
         }
     }
+
+    @Override
+    public String validateOnly(UserDTO userDTO, String sessionId) {
+        String key = "email:" + sessionId + ":" + userDTO.getEmail() + ":true";
+        if (Boolean.TRUE.equals(template.hasKey(key))) {
+            String code = template.opsForValue().get(key);
+            if (code == null) return "验证码失效，请重新获取验证码";
+            if (code.equals(userDTO.getValidateCode())) {
+                template.delete(key); // 删去验证码信息
+                return null;
+            } else {
+                return "验证码错误，请核对";
+            }
+        } else {
+            return "验证码失效，请先获取验证码";
+        }
+    }
+
+    @Override
+    public Boolean resetPassword(String password, String email) {
+        password = encoder.encode(password);
+        return userMapper.resetPassword(password, email) > 0;
+    }
+
 }

@@ -8,6 +8,12 @@
         VALUES (#{username}, #{password}, #{email})
     </insert>
 
+    <update id="resetPassword">
+        UPDATE t_user
+        SET password = #{password}
+        WHERE email = #{email}
+    </update>
+
     <select id="findByUsernameOrEmail" resultType="com.ming.entity.User">
         SELECT *
         FROM t_user

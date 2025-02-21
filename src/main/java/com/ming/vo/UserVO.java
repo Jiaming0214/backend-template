@@ -23,19 +23,18 @@ public class UserVO {
      */
     private final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
-    @NotNull
+    private Long id;
+
     @Pattern(regexp = USERNAME_REGEX)
     @Length(min = 1, max = 20)
     private String username;
 
-    @NotNull
     @Length(min = 6, max = 20)
     private String password;
 
-    @NotNull
     @Pattern(regexp = EMAIL_REGEX)
     private String email;
 
-    @NotNull
+    @Length(min = 6, max = 6)
     private String validateCode;
 }
