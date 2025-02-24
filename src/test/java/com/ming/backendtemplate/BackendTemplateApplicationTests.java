@@ -1,8 +1,8 @@
 package com.ming.backendtemplate;
 
 import com.ming.convert.UserConvert;
-import com.ming.dto.UserDTO;
-import com.ming.entity.User;
+import com.ming.dto.auth.UserDTO;
+import com.ming.entity.auth.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 

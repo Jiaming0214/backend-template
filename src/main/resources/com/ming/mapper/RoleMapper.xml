@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ming.mapper.RoleMapper">
+
+    <select id="findByUserId" resultType="com.ming.entity.auth.Role">
+        SELECT r.id, r.name, r.zh_name, r.deleted
+        FROM t_user_role u
+                 LEFT JOIN t_role r ON u.rid = r.id
+        WHERE u.uid = #{userId}
+          AND r.deleted = 0
+    </select>
+
+</mapper>

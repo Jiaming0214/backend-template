@@ -1,4 +1,4 @@
-package com.ming.dto;
+package com.ming.dto.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

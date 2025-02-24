@@ -3,7 +3,7 @@ package com.ming.controller;
 import com.ming.convert.UserConvert;
 import com.ming.entity.RestBean;
 import com.ming.service.AuthorizeService;
-import com.ming.vo.UserVO;
+import com.ming.vo.auth.UserVO;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;

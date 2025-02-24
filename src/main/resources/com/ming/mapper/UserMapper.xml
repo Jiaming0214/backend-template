@@ -14,7 +14,7 @@
         WHERE email = #{email}
     </update>
 
-    <select id="findByUsernameOrEmail" resultType="com.ming.entity.User">
+    <select id="findByUsernameOrEmail" resultType="com.ming.entity.auth.User">
         SELECT *
         FROM t_user
         WHERE username = #{text}

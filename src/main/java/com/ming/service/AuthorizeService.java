@@ -1,6 +1,6 @@
 package com.ming.service;
 
-import com.ming.dto.UserDTO;
+import com.ming.dto.auth.UserDTO;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 public interface AuthorizeService extends UserDetailsService {

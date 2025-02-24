@@ -1,7 +1,7 @@
 package com.ming.mapper;
 
-import com.ming.dto.UserDTO;
-import com.ming.entity.User;
+import com.ming.dto.auth.UserDTO;
+import com.ming.entity.auth.User;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 

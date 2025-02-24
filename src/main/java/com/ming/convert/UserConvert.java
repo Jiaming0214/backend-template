@@ -1,8 +1,8 @@
 package com.ming.convert;
 
-import com.ming.dto.UserDTO;
-import com.ming.entity.User;
-import com.ming.vo.UserVO;
+import com.ming.dto.auth.UserDTO;
+import com.ming.entity.auth.User;
+import com.ming.vo.auth.UserVO;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 

@@ -1,7 +1,10 @@
 package com.ming.service.impl;
 
-import com.ming.dto.UserDTO;
-import com.ming.entity.User;
+import com.ming.dto.auth.UserDTO;
+import com.ming.entity.auth.Role;
+import com.ming.entity.auth.User;
+import com.ming.exception.ServiceException;
+import com.ming.mapper.RoleMapper;
 import com.ming.mapper.UserMapper;
 import com.ming.service.AuthorizeService;
 import jakarta.annotation.Resource;
@@ -14,16 +17,21 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthorizeServiceImpl implements AuthorizeService {
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private RoleMapper roleMapper;
     @Resource
     private MailSender mailSender;
     @Value("${spring.mail.username}")
@@ -39,10 +47,16 @@ public class AuthorizeServiceImpl implements AuthorizeService {
         User userInDb = Optional.ofNullable(userMapper.findByUsernameOrEmail(username))
                 .orElseThrow(() -> new UsernameNotFoundException("用户名或密码错误"));
 
+        List<Role> roleList = roleMapper.findByUserId(userInDb.getId());
+
+        if(CollectionUtils.isEmpty(roleList)) throw new ServiceException(500, "系统未知错误，请联系管理员");
+
+        String[] roles = roleList.stream().map(Role::getName).collect(Collectors.toSet()).toArray(new String[]{});
+
         return org.springframework.security.core.userdetails.User
                 .withUsername(userInDb.getUsername())
                 .password(userInDb.getPassword())
-                .roles("user")
+                .roles(roles)
                 .build();
     }
 

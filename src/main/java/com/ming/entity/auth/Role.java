@@ -1,4 +1,4 @@
-package com.ming.entity;
+package com.ming.entity.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,15 +9,16 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
-    // 用户ID
+public class Role {
+    // 主键ID
     private Long id;
-    // 用户名
-    private String username;
-    // 密码
-    private String password;
-    // 电子邮箱
-    private String email;
+
+    // 名称
+    private String name;
+
+    // 显示名称
+    private String zhName;
+
     // 删除状态
     private Integer deleted;
 }

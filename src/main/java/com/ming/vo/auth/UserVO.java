@@ -1,7 +1,6 @@
-package com.ming.vo;
+package com.ming.vo.auth;
 
 import com.alibaba.fastjson2.annotation.JSONField;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,11 +16,13 @@ public class UserVO {
     /**
      * 验证用户名正则表达式
      */
+    @JSONField(serialize = false)
     private final String USERNAME_REGEX = "^[a-zA-Z0-9]{6,20}$";
 
     /**
      * 验证电子邮件正则表达式
      */
+    @JSONField(serialize = false)
     private final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
 
     private Long id;

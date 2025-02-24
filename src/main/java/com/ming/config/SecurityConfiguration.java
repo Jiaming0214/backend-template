@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -31,6 +32,7 @@ import java.io.IOException;
 @AllArgsConstructor
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfiguration {
     private final AuthorizeService authorizeService;
     private final DataSource dataSource;
@@ -74,9 +76,9 @@ public class SecurityConfiguration {
                 )
                 .cors(cors -> cors.configurationSource(this.corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .exceptionHandling(exceptionHandlingConfigurer ->
-                        exceptionHandlingConfigurer.authenticationEntryPoint(this::onAuthenticationFailure)
-                )
+//                .exceptionHandling(exceptionHandlingConfigurer ->
+//                        exceptionHandlingConfigurer.authenticationEntryPoint(this::onAuthenticationFailure)
+//                )
                 .build();
     }
 

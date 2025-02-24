@@ -5,13 +5,13 @@ import com.alibaba.fastjson2.support.config.FastJsonConfig;
 import com.alibaba.fastjson2.support.spring6.http.converter.FastJsonHttpMessageConverter;
 import com.ming.interceptor.AuthorizeInterceptor;
 import jakarta.annotation.Resource;
+import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 @Configuration
 public class WebConfiguration implements WebMvcConfigurer {
@@ -32,8 +32,8 @@ public class WebConfiguration implements WebMvcConfigurer {
     /**
      * 使用FastJson2替换默认的Jackson消息转换器
      */
-    @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+    @Bean
+    public HttpMessageConverters fastJsonHttpMessageConverter() {
         FastJsonHttpMessageConverter fastJsonHttpMessageConverter = new FastJsonHttpMessageConverter();
         FastJsonConfig fastJsonConfig = new FastJsonConfig();
         fastJsonConfig.setCharset(StandardCharsets.UTF_8);
@@ -45,6 +45,6 @@ public class WebConfiguration implements WebMvcConfigurer {
                 JSONWriter.Feature.WriteNullListAsEmpty
         );
         fastJsonHttpMessageConverter.setFastJsonConfig(fastJsonConfig);
-        converters.add(fastJsonHttpMessageConverter);
+        return new HttpMessageConverters(fastJsonHttpMessageConverter);
     }
 }

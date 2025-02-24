@@ -1,7 +1,7 @@
 package com.ming.controller;
 
 import com.ming.entity.RestBean;
-import com.ming.vo.UserVO;
+import com.ming.vo.auth.UserVO;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

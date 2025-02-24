@@ -20,3 +20,11 @@ spring:
       host: 121.40.224.146
       port: 6379
       database: 0
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    com.ming.mapper: debug
