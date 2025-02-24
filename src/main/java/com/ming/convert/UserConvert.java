@@ -16,5 +16,7 @@ public interface UserConvert {
 
     UserVO dto2vo(UserDTO userDTO);
 
+    UserVO entity2vo(User user);
+
     User dto2entity(UserDTO userDTO);
 }

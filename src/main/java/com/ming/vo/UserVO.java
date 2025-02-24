@@ -1,5 +1,6 @@
 package com.ming.vo;
 
+import com.alibaba.fastjson2.annotation.JSONField;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
@@ -30,11 +31,13 @@ public class UserVO {
     private String username;
 
     @Length(min = 6, max = 20)
+    @JSONField(serialize = false)
     private String password;
 
     @Pattern(regexp = EMAIL_REGEX)
     private String email;
 
     @Length(min = 6, max = 6)
+    @JSONField(serialize = false)
     private String validateCode;
 }
