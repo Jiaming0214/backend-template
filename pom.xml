@@ -31,13 +31,6 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
-        <!-- 排除默认的 logback -->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-logging</artifactId>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
-
         <!-- 添加 Log4j2 依赖 -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -79,11 +72,24 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
-        <!-- MyBatis -->
+        <!-- MyBatisPlus -->
         <dependency>
-            <groupId>org.mybatis.spring.boot</groupId>
-            <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>3.0.4</version>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>3.5.10.1</version>
+        </dependency>
+
+        <!-- MyBatis Plus 增强 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>3.5.10.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.yulichang</groupId>
+            <artifactId>mybatis-plus-join-boot-starter</artifactId>
+            <version>1.5.2</version>
         </dependency>
 
         <!-- MySQL -->
@@ -149,6 +155,13 @@
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
             <version>2.0.30</version>
+        </dependency>
+
+        <!-- guva工具类 -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.4.0-jre</version>
         </dependency>
 
     </dependencies>

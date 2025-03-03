@@ -1,4 +1,4 @@
-package com.ming.dto.auth;
+package com.ming.vo.auth;
 
 import com.alibaba.fastjson2.annotation.JSONField;
 import lombok.AllArgsConstructor;
@@ -8,21 +8,17 @@ import lombok.ToString;
 
 @Data
 @ToString
-@NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
-    // 用户ID
+@NoArgsConstructor
+public class RoleVO {
+    // 主键ID
     private Long id;
-    // 用户名
-    private String username;
-    // 密码
-    private String password;
-    // 电子邮箱
-    private String email;
-    // 删除状态
-    private Integer deleted;
-    // 验证码
-    private String validateCode;
+
+    // 名称
+    private String name;
+
+    // 显示名称
+    private String zhName;
 
     @JSONField(serialize = false)
     private Integer current;

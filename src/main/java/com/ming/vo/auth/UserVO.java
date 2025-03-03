@@ -1,12 +1,15 @@
 package com.ming.vo.auth;
 
 import com.alibaba.fastjson2.annotation.JSONField;
+import com.ming.entity.auth.Role;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.List;
 
 @Data
 @ToString
@@ -41,4 +44,14 @@ public class UserVO {
     @Length(min = 6, max = 6)
     @JSONField(serialize = false)
     private String validateCode;
+
+    private List<RoleVO> roles;
+
+    private List<MenuVO> menus;
+
+    @JSONField(serialize = false)
+    private Integer current;
+
+    @JSONField(serialize = false)
+    private Integer size;
 }
