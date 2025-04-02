@@ -34,6 +34,9 @@ public class MenuDTO {
     // 菜单层级
     private Integer level;
 
+    // 排序编号
+    private Integer orderNum;
+
     // 菜单备注
     private String remark;
 

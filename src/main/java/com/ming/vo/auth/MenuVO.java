@@ -45,6 +45,10 @@ public class MenuVO {
     @NotNull(message = "菜单层级不能为空")
     private Integer level;
 
+    // 排序编号
+    @NotNull(message = "菜单排序不能为空")
+    private Integer orderNum;
+
     // 菜单备注
     private String remark;
 
