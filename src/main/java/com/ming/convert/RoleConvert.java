@@ -1,6 +1,7 @@
 package com.ming.convert;
 
 import com.ming.dto.auth.RoleDTO;
+import com.ming.entity.auth.Menu;
 import com.ming.entity.auth.Role;
 import com.ming.vo.auth.RoleVO;
 import org.mapstruct.Mapper;
@@ -22,5 +23,9 @@ public interface RoleConvert {
 
     Role dto2entity(RoleDTO roleDTO);
 
+    List<RoleDTO> entityList2dtoList(List<Role> roleList);
+
     List<RoleVO> entityList2voList(List<Role> roleList);
+
+    RoleDTO buildRoleDTO(Role role, List<Menu> menus);
 }

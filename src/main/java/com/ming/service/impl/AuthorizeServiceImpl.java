@@ -1,5 +1,14 @@
 package com.ming.service.impl;
 
+import com.alibaba.fastjson2.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.common.collect.Lists;
+import com.ming.config.EmailConfiguration;
+import com.ming.convert.MenuConvert;
+import com.ming.convert.RoleConvert;
+import com.ming.convert.UserConvert;
+import com.ming.dto.auth.MenuDTO;
+import com.ming.dto.auth.RoleDTO;
 import com.ming.dto.auth.UserDTO;
 import com.ming.entity.auth.Role;
 import com.ming.entity.auth.User;
@@ -7,12 +16,21 @@ import com.ming.exception.ServiceException;
 import com.ming.mapper.RoleMapper;
 import com.ming.mapper.UserMapper;
 import com.ming.service.AuthorizeService;
-import jakarta.annotation.Resource;
-import org.springframework.beans.factory.annotation.Value;
+import com.ming.service.MenuService;
+import com.ming.util.JWTUtil;
+import com.ming.vo.auth.MenuVO;
+import com.ming.vo.auth.RoleVO;
+import com.ming.vo.auth.UserVO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,24 +38,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@AllArgsConstructor
 public class AuthorizeServiceImpl implements AuthorizeService {
-    @Resource
-    private UserMapper userMapper;
-    @Resource
-    private RoleMapper roleMapper;
-    @Resource
-    private MailSender mailSender;
-    @Value("${spring.mail.username}")
-    private String SENDER_FROM;
-    @Resource
-    private StringRedisTemplate template;
+    private final UserMapper userMapper;
+    private final RoleMapper roleMapper;
+    private final MenuService menuService;
+    private final EmailConfiguration emailConfiguration;
+    private final MailSender mailSender;
+    private final StringRedisTemplate template;
+    private final JWTUtil jwtUtil;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Override
@@ -49,15 +68,72 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 
         List<Role> roleList = roleMapper.findByUserId(userInDb.getId());
 
-        if(CollectionUtils.isEmpty(roleList)) throw new ServiceException(500, "系统未知错误，请联系管理员");
+        if (CollectionUtils.isEmpty(roleList)) throw new ServiceException(500, "系统未知错误，请联系管理员");
 
-        String[] roles = roleList.stream().map(Role::getName).collect(Collectors.toSet()).toArray(new String[]{});
+        String[] roles = roleList.stream()
+                .map(Role::getName)
+                .toArray(String[]::new);
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(userInDb.getUsername())
                 .password(userInDb.getPassword())
                 .roles(roles)
                 .build();
+    }
+
+    @Override
+    public void processLoginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+        response.setCharacterEncoding("utf-8");
+        response.setContentType("application/json;charset=UTF-8");
+
+        UserDetails user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+        List<String> roleNames = user.getAuthorities().stream()
+                .map(authority -> authority.getAuthority().substring(5))
+                .toList();
+        List<RoleVO> roleVOs;
+        List<MenuDTO> menus;
+
+        if (CollectionUtils.isEmpty(roleNames)) {
+            menus = Lists.newArrayList();
+            roleVOs = Lists.newArrayList();
+        } else {
+            List<Role> roles = roleMapper.selectList(
+                    new LambdaQueryWrapper<Role>()
+                            .in(Role::getName, roleNames)
+            );
+            roleVOs = RoleConvert.INSTANCE.entityList2voList(roles);
+        }
+
+        if (roleNames.contains("ADMIN")) {
+            menus = menuService.getAllMenu(null);
+        } else {
+            if (CollectionUtils.isEmpty(roleVOs)) {
+                menus = Lists.newArrayList();
+            } else {
+                List<Long> roleIds = roleVOs.stream().map(RoleVO::getId).toList();
+                menus = menuService.getAllMenu(roleIds);
+            }
+        }
+        List<MenuVO> menuVOs = MenuConvert.INSTANCE.dtoList2voList(menus);
+
+
+        // 信息填充
+        User userInDB = userMapper.findByUsernameOrEmail(user.getUsername());
+        User userBaseInfo = new User();
+        userBaseInfo.setUsername(userInDB.getUsername());
+        userBaseInfo.setPassword(userInDB.getPassword());
+        // 组装VO
+        UserVO userVO = UserConvert.INSTANCE.buildUserVO(userBaseInfo, roleVOs, menuVOs);
+
+        // 生成Token
+        String token = jwtUtil.generateToken(userInDB.getId(), user.getUsername(), user);
+
+        Map<String, Object> resultMap = Map.of(
+                "token", token,
+                "userInfo", userVO
+        );
+
+        response.getWriter().write(JSON.toJSONString(resultMap));
     }
 
     /**
@@ -75,17 +151,17 @@ public class AuthorizeServiceImpl implements AuthorizeService {
             if (expireTime > 120) return "请求频繁，请稍后再试";
         }
         User user = userMapper.findByUsernameOrEmail(email);
-        if(hasUser && user == null) {
+        if (hasUser && user == null) {
             return "没有用此邮箱注册的用户信息";
         }
-        if(!hasUser && user != null) {
+        if (!hasUser && user != null) {
             return "此邮箱已被注册";
         }
         // 生成验证码
         Random random = new Random();
         int code = random.nextInt(899999) + 100000;
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(SENDER_FROM);
+        message.setFrom(emailConfiguration.getSenderFrom());
         message.setTo(email);
         message.setSubject("您的验证邮件");
         message.setText("您的验证码为：" + code);
@@ -95,7 +171,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
             template.expire(key, 3, TimeUnit.MINUTES);
             return null;
         } catch (MailException e) {
-            e.printStackTrace();
+            log.info("邮件发送失败：", e);
             return "邮箱有误，发送失败";
         }
     }
@@ -111,7 +187,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
                 if (userMapper.createUser(userDTO) > 0) {
                     template.delete(key); // 删去验证码信息
                     return null;
-                }else {
+                } else {
                     return "系统内部错误，请联系管理员";
                 }
             } else {

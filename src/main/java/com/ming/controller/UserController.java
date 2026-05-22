@@ -16,4 +16,9 @@ public class UserController {
         return RestBean.success(user);
     }
 
+    @RequestMapping("/test")
+    public RestBean<String> test(){
+        return RestBean.success("测试成功");
+    }
+
 }

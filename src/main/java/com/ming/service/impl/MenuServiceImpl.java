@@ -8,10 +8,14 @@ import com.google.common.collect.Lists;
 import com.ming.convert.MenuConvert;
 import com.ming.dto.auth.MenuDTO;
 import com.ming.entity.auth.Menu;
+import com.ming.entity.auth.RoleMenu;
 import com.ming.exception.ServiceException;
 import com.ming.mapper.MenuMapper;
+import com.ming.mapper.RoleMenuMapper;
 import com.ming.service.MenuService;
 import com.ming.vo.auth.MenuVO;
+import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -19,8 +23,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
+@AllArgsConstructor
 public class MenuServiceImpl extends MPJBaseServiceImpl<MenuMapper, Menu> implements MenuService {
+    private final RoleMenuMapper roleMenuMapper;
 
     @Override
     public List<MenuDTO> getList(MenuDTO dto) {
@@ -109,10 +116,33 @@ public class MenuServiceImpl extends MPJBaseServiceImpl<MenuMapper, Menu> implem
         return baseMapper.insert(MenuConvert.INSTANCE.dto2entity(menuDTO));
     }
 
+    /**
+     * 获取所有菜单信息
+     *
+     * @param roleIds 角色id列表
+     *                角色id列表为空时，则获取所有菜单信息
+     * @return 菜单信息
+     */
     @Override
-    public List<MenuDTO> getAllMenu() {
+    public List<MenuDTO> getAllMenu(List<Long> roleIds) {
         MPJLambdaWrapper<Menu> wrapper = getBaseLambdaWrapper(new MenuDTO());
+        if (!CollectionUtils.isEmpty(roleIds)) {
+            List<RoleMenu> roleMenus = roleMenuMapper.selectList(
+                    new MPJLambdaWrapper<RoleMenu>()
+                            .in(RoleMenu::getRid, roleIds)
+            );
+            // 角色对应的菜单信息为空时，返回空列表
+            if (CollectionUtils.isEmpty(roleMenus)) return Lists.newArrayList();
+            List<Long> menuIds = roleMenus.stream()
+                    .map(RoleMenu::getMid)
+                    .toList();
+            wrapper.in(Menu::getId, menuIds);
+        }
         List<Menu> menuList = baseMapper.selectList(wrapper);
+        // 菜单为空时，返回空列表
+        if(CollectionUtils.isEmpty(menuList)) {
+            return Lists.newArrayList();
+        }
         List<Menu> menuTree = buildTree(menuList);
         return MenuConvert.INSTANCE.entityList2dtoList(menuTree);
     }

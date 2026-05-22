@@ -7,6 +7,7 @@ import com.ming.vo.auth.UserVO;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 @Validated
 @AllArgsConstructor
+@Slf4j
 public class AuthorizeController {
     private final AuthorizeService authorizeService;
 
@@ -24,7 +26,6 @@ public class AuthorizeController {
      * 验证电子邮件正则表达式
      */
     private final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-
 
     /**
      * 验证码发送接口
@@ -88,13 +89,13 @@ public class AuthorizeController {
             @RequestBody @Validated UserVO userVO,
             HttpSession session
     ) {
-        String email = (String)session.getAttribute("reset-password");
-        if(email == null) {
+        String email = (String) session.getAttribute("reset-password");
+        if (email == null) {
             return RestBean.failure(400, "请先完成邮箱验证");
-        }else if(authorizeService.resetPassword(userVO.getPassword(), email)){
+        } else if (authorizeService.resetPassword(userVO.getPassword(), email)) {
             session.removeAttribute("reset-password");
             return RestBean.success("密码修改成功");
-        }else {
+        } else {
             return RestBean.failure(500, "系统内部发生错误，请联系管理员");
         }
     }

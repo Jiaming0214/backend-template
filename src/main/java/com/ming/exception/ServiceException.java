@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public class ServiceException extends RuntimeException {
-    private Integer code;
+    private final Integer code;
 
     public ServiceException(Integer code, String msg) {
         super(msg);

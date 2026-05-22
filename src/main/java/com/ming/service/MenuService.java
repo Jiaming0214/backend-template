@@ -10,7 +10,7 @@ import java.util.List;
 public interface MenuService extends MPJBaseService<Menu> {
     List<MenuDTO> getList(MenuDTO dto);
 
-    List<MenuDTO> getAllMenu();
+    List<MenuDTO> getAllMenu(List<Long> roleIds);
 
     MenuVO getInfo(Long id);
 

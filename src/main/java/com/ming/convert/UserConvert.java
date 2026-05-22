@@ -1,5 +1,6 @@
 package com.ming.convert;
 
+import com.ming.dto.auth.RoleDTO;
 import com.ming.dto.auth.UserDTO;
 import com.ming.entity.auth.Role;
 import com.ming.entity.auth.User;

@@ -19,6 +19,7 @@ spring:
     redis:
       host: 121.40.224.146
       port: 6379
+      password: 112233445566
       database: 0
 
 mybatis-plus:
@@ -33,3 +34,9 @@ mybatis-plus:
 logging:
   level:
     com.ming.mapper: debug
+
+jwt:
+  secret: "the_close_you_stand_the_less_you_see"
+  expiration: 86400000
+  header: "Authorization"
+  token-prefix: "Bearer "
