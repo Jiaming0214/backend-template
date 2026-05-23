@@ -52,7 +52,7 @@ public class SecurityConfiguration {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setCharacterEncoding("utf-8");
         response.setContentType("application/json;charset=UTF-8");
-        response.getWriter().write(JSONObject.toJSONString(RestBean.failure(401, "未登录，请先登录")));
+        response.getWriter().write(JSONObject.toJSONString(RestBean.failure(401, exception.getMessage())));
     }
 
     private void handleAccessDenied(HttpServletRequest request, HttpServletResponse response, Exception exception) throws IOException {
@@ -80,7 +80,7 @@ public class SecurityConfiguration {
                 )
                 .logout(logout -> logout
                         .logoutUrl("/api/auth/logout")
-                        .logoutSuccessHandler(this::onAuthenticationSuccess)
+                        .logoutSuccessHandler(authorizeService::processLogoutSuccess)
                         .permitAll()
                 )
                 .authorizeHttpRequests(auth -> auth

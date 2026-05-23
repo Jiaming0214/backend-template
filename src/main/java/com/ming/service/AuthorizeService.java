@@ -15,6 +15,8 @@ import java.util.Map;
 public interface AuthorizeService extends UserDetailsService {
     void processLoginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException;
 
+    void processLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException;
+
     String sendValidateEmail(String email, String sessionId, Boolean hasUser);
 
     String validateAndRegister(UserDTO userDTO, String sessionId);

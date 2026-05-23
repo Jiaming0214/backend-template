@@ -1,15 +1,18 @@
 package com.ming.service.impl;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.collect.Lists;
 import com.ming.config.EmailConfiguration;
+import com.ming.config.JWTConfiguration;
 import com.ming.convert.MenuConvert;
 import com.ming.convert.RoleConvert;
 import com.ming.convert.UserConvert;
 import com.ming.dto.auth.MenuDTO;
 import com.ming.dto.auth.RoleDTO;
 import com.ming.dto.auth.UserDTO;
+import com.ming.entity.RestBean;
 import com.ming.entity.auth.Role;
 import com.ming.entity.auth.User;
 import com.ming.exception.ServiceException;
@@ -54,6 +57,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     private final RoleMapper roleMapper;
     private final MenuService menuService;
     private final EmailConfiguration emailConfiguration;
+    private final JWTConfiguration jwtConfiguration;
     private final MailSender mailSender;
     private final StringRedisTemplate template;
     private final JWTUtil jwtUtil;
@@ -81,6 +85,11 @@ public class AuthorizeServiceImpl implements AuthorizeService {
                 .build();
     }
 
+    /**
+     * 登录成功后操作
+     * 1.生成Token以及用户信息（包括角色，菜单等信息）
+     * 2.返回给前端
+     */
     @Override
     public void processLoginSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         response.setCharacterEncoding("utf-8");
@@ -137,11 +146,29 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     }
 
     /**
-     * 1.先生成对应的验证码
-     * 2.发送验证码到指定邮箱中
-     * 2-1.如果在3分钟内再次请求验证码，那么重置时间
-     * 3.把邮箱和对应的验证码放入Redis中，并设置3min过期时间
-     * 4.用户注册时再从Redis中取出键值对，进行比对
+     * 退出登录成功后操作
+     * 将对应的token放入黑名单中，剩下时间到期后自动删除
+     */
+    @Override
+    public void processLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
+        response.setCharacterEncoding("utf-8");
+        response.setContentType("application/json;charset=UTF-8");
+        String bearerToken = request.getHeader(jwtConfiguration.getHeader());
+        if (bearerToken != null && bearerToken.startsWith(jwtConfiguration.getTokenPrefix())) {
+            if (jwtUtil.invaildToken(bearerToken.substring(jwtConfiguration.getTokenPrefix().length()))) {
+                response.getWriter().write(JSONObject.toJSONString(RestBean.success("退出成功")));
+            } else {
+                response.getWriter().write(JSONObject.toJSONString(RestBean.failure(500, "退出失败")));
+            }
+        }
+    }
+
+    /**
+     * <p>1.先生成对应的验证码</p>
+     * <p>2.发送验证码到指定邮箱中</p>
+     * <p>2-1.如果在3分钟内再次请求验证码，那么重置时间</p>
+     * <p>3.把邮箱和对应的验证码放入Redis中，并设置3min过期时间</p>
+     * <p>4.用户注册时再从Redis中取出键值对，进行比对</p>
      */
     @Override
     public String sendValidateEmail(String email, String sessionId, Boolean hasUser) {
