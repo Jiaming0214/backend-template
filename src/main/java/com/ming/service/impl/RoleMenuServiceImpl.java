@@ -2,7 +2,10 @@ package com.ming.service.impl;
 
 import com.github.yulichang.base.MPJBaseServiceImpl;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
+import com.google.common.collect.Lists;
+import com.ming.convert.MenuConvert;
 import com.ming.convert.RoleConvert;
+import com.ming.dto.auth.MenuDTO;
 import com.ming.dto.auth.RoleDTO;
 import com.ming.entity.auth.Menu;
 import com.ming.entity.auth.Role;
@@ -49,4 +52,36 @@ public class RoleMenuServiceImpl extends MPJBaseServiceImpl<RoleMenuMapper, Role
             return RoleConvert.INSTANCE.entity2dto(role);
         }
     }
+
+    /**
+     * 获取所有菜单信息
+     *
+     * @param roleIds 角色id列表
+     *                角色id列表为空时，则获取所有菜单信息
+     * @return 菜单信息
+     */
+    @Override
+    public List<MenuDTO> getMenuByRoleIds(List<Long> roleIds) {
+        MPJLambdaWrapper<Menu> menuMPJLambdaWrapper = new MPJLambdaWrapper<Menu>();
+        if(!CollectionUtils.isEmpty(roleIds)) {
+            List<RoleMenu> roleMenus = baseMapper.selectList(
+                    new MPJLambdaWrapper<RoleMenu>()
+                            .in(RoleMenu::getRid, roleIds)
+            );
+            // 角色对应的菜单信息为空时，返回空列表
+            if (CollectionUtils.isEmpty(roleMenus)) return Lists.newArrayList();
+            List<Long> menuIds = roleMenus.stream()
+                    .map(RoleMenu::getMid)
+                    .toList();
+            menuMPJLambdaWrapper.in(Menu::getId, menuIds);
+        }
+        List<Menu> menus = menuService.list(menuMPJLambdaWrapper);
+        // 菜单为空时，返回空列表
+        if(CollectionUtils.isEmpty(menus)) {
+            return Lists.newArrayList();
+        }
+        List<Menu> menuTree = menuService.buildTree(menus);
+        return MenuConvert.INSTANCE.entityList2dtoList(menuTree);
+    }
+
 }

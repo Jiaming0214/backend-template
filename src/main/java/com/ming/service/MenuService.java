@@ -10,8 +10,6 @@ import java.util.List;
 public interface MenuService extends MPJBaseService<Menu> {
     List<MenuDTO> getList(MenuDTO dto);
 
-    List<MenuDTO> getAllMenu(List<Long> roleIds);
-
     MenuVO getInfo(Long id);
 
     Integer delete(Long id);
@@ -19,4 +17,6 @@ public interface MenuService extends MPJBaseService<Menu> {
     Integer edit(MenuDTO menuDTO);
 
     Integer add(MenuDTO menuDTO);
+
+    List<Menu> buildTree(List<Menu> menuList);
 }
