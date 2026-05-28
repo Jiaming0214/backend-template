@@ -11,8 +11,8 @@ import com.ming.entity.auth.Menu;
 import com.ming.entity.auth.RoleMenu;
 import com.ming.exception.ServiceException;
 import com.ming.mapper.MenuMapper;
-import com.ming.mapper.RoleMenuMapper;
 import com.ming.service.MenuService;
+import com.ming.service.RoleMenuService;
 import com.ming.vo.auth.MenuVO;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class MenuServiceImpl extends MPJBaseServiceImpl<MenuMapper, Menu> implements MenuService {
-    private final RoleMenuMapper roleMenuMapper;
+    private final RoleMenuService roleMenuService;
 
     @Override
     public List<MenuDTO> getList(MenuDTO dto) {
@@ -127,7 +127,7 @@ public class MenuServiceImpl extends MPJBaseServiceImpl<MenuMapper, Menu> implem
     public List<MenuDTO> getAllMenu(List<Long> roleIds) {
         MPJLambdaWrapper<Menu> wrapper = getBaseLambdaWrapper(new MenuDTO());
         if (!CollectionUtils.isEmpty(roleIds)) {
-            List<RoleMenu> roleMenus = roleMenuMapper.selectList(
+            List<RoleMenu> roleMenus = roleMenuService.list(
                     new MPJLambdaWrapper<RoleMenu>()
                             .in(RoleMenu::getRid, roleIds)
             );

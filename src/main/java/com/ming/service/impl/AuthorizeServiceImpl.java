@@ -10,16 +10,15 @@ import com.ming.convert.MenuConvert;
 import com.ming.convert.RoleConvert;
 import com.ming.convert.UserConvert;
 import com.ming.dto.auth.MenuDTO;
-import com.ming.dto.auth.RoleDTO;
 import com.ming.dto.auth.UserDTO;
 import com.ming.entity.RestBean;
 import com.ming.entity.auth.Role;
 import com.ming.entity.auth.User;
 import com.ming.exception.ServiceException;
-import com.ming.mapper.RoleMapper;
-import com.ming.mapper.UserMapper;
 import com.ming.service.AuthorizeService;
 import com.ming.service.MenuService;
+import com.ming.service.RoleService;
+import com.ming.service.UserService;
 import com.ming.util.JWTUtil;
 import com.ming.vo.auth.MenuVO;
 import com.ming.vo.auth.RoleVO;
@@ -33,7 +32,6 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -47,14 +45,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class AuthorizeServiceImpl implements AuthorizeService {
-    private final UserMapper userMapper;
-    private final RoleMapper roleMapper;
+    private final UserService userService;
+    private final RoleService roleService;
     private final MenuService menuService;
     private final EmailConfiguration emailConfiguration;
     private final JWTConfiguration jwtConfiguration;
@@ -67,10 +64,10 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         if (!StringUtils.hasText(username)) throw new UsernameNotFoundException("用户名不能为空");
 
-        User userInDb = Optional.ofNullable(userMapper.findByUsernameOrEmail(username))
+        User userInDb = Optional.ofNullable(userService.getByUsernameOrEmail(username))
                 .orElseThrow(() -> new UsernameNotFoundException("用户名或密码错误"));
 
-        List<Role> roleList = roleMapper.findByUserId(userInDb.getId());
+        List<Role> roleList = roleService.getByUserId(userInDb.getId());
 
         if (CollectionUtils.isEmpty(roleList)) throw new ServiceException(500, "系统未知错误，请联系管理员");
 
@@ -106,7 +103,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
             menus = Lists.newArrayList();
             roleVOs = Lists.newArrayList();
         } else {
-            List<Role> roles = roleMapper.selectList(
+            List<Role> roles = roleService.list(
                     new LambdaQueryWrapper<Role>()
                             .in(Role::getName, roleNames)
             );
@@ -127,7 +124,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
 
 
         // 信息填充
-        User userInDB = userMapper.findByUsernameOrEmail(user.getUsername());
+        User userInDB = userService.getByUsernameOrEmail(user.getUsername());
         User userBaseInfo = new User();
         userBaseInfo.setUsername(userInDB.getUsername());
         userBaseInfo.setPassword(userInDB.getPassword());
@@ -177,7 +174,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
             Long expireTime = Optional.ofNullable(template.getExpire(key)).orElse(0L);
             if (expireTime > 120) return "请求频繁，请稍后再试";
         }
-        User user = userMapper.findByUsernameOrEmail(email);
+        User user = userService.getByUsernameOrEmail(email);
         if (hasUser && user == null) {
             return "没有用此邮箱注册的用户信息";
         }
@@ -211,7 +208,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
             if (code == null) return "验证码失效，请重新获取验证码";
             if (code.equals(userDTO.getValidateCode())) {
                 userDTO.setPassword(encoder.encode(userDTO.getPassword()));
-                if (userMapper.createUser(userDTO) > 0) {
+                if (userService.createUser(userDTO) > 0) {
                     template.delete(key); // 删去验证码信息
                     return null;
                 } else {
@@ -245,7 +242,7 @@ public class AuthorizeServiceImpl implements AuthorizeService {
     @Override
     public Boolean resetPassword(String password, String email) {
         password = encoder.encode(password);
-        return userMapper.resetPassword(password, email) > 0;
+        return userService.resetPassword(password, email) > 0;
     }
 
 }

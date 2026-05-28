@@ -8,10 +8,10 @@ import com.ming.entity.auth.Menu;
 import com.ming.entity.auth.Role;
 import com.ming.entity.auth.RoleMenu;
 import com.ming.exception.ServiceException;
-import com.ming.mapper.MenuMapper;
-import com.ming.mapper.RoleMapper;
 import com.ming.mapper.RoleMenuMapper;
+import com.ming.service.MenuService;
 import com.ming.service.RoleMenuService;
+import com.ming.service.RoleService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -22,13 +22,13 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class RoleMenuServiceImpl extends MPJBaseServiceImpl<RoleMenuMapper, RoleMenu> implements RoleMenuService {
-    private final RoleMapper roleMapper;
-    private final MenuMapper menuMapper;
+    private final RoleService roleSerivice;
+    private final MenuService menuService;
 
     @Override
     public RoleDTO getRoleMenuInfo(Long roleId) {
         // 先查询角色信息
-        Role role = Optional.ofNullable(roleMapper.selectById(roleId))
+        Role role = Optional.ofNullable(roleSerivice.getById(roleId))
                 .orElseThrow(() -> new ServiceException(500, "角色不存在"));
         // 查询角色对应的菜单信息
         List<RoleMenu> roleMenus = baseMapper.selectList(
@@ -40,7 +40,7 @@ public class RoleMenuServiceImpl extends MPJBaseServiceImpl<RoleMenuMapper, Role
             List<Long> menuIds = roleMenus.stream()
                     .map(RoleMenu::getMid)
                     .toList();
-            List<Menu> menus = menuMapper.selectList(
+            List<Menu> menus = menuService.list(
                     new MPJLambdaWrapper<Menu>()
                             .in(Menu::getId, menuIds)
             );

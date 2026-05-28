@@ -6,11 +6,18 @@ import com.ming.dto.auth.RoleDTO;
 import com.ming.entity.auth.Role;
 import com.ming.vo.auth.RoleVO;
 
+import java.util.List;
+
 public interface RoleService extends MPJBaseService<Role> {
     /**
      * 分页查询角色信息
      */
     Page<RoleVO> getPage(RoleDTO roleDTO);
+
+    /**
+     * 根据用户ID获取角色信息
+     */
+    List<Role> getByUserId(Long userId);
 
     /**
      * 修改角色信息

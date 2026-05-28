@@ -12,6 +12,8 @@ import com.ming.service.RoleService;
 import com.ming.vo.auth.RoleVO;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class RoleServiceImpl extends MPJBaseServiceImpl<RoleMapper, Role> implements RoleService {
     @Override
@@ -21,6 +23,11 @@ public class RoleServiceImpl extends MPJBaseServiceImpl<RoleMapper, Role> implem
                 RoleVO.class,
                 getBaseLambdaWrapper(roleDTO)
         );
+    }
+
+    @Override
+    public List<Role> getByUserId(Long userId) {
+        return baseMapper.findByUserId(userId);
     }
 
     @Override
