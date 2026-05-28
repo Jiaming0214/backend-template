@@ -11,7 +11,7 @@ spring:
           ssl:
             enable: true
   datasource:
-    url: jdbc:mysql://121.40.224.146:3306/springdemo?useUnicode=true&characterEncoding=utf-8&charset=utf8mb4&serverTimezone=UTC
+    url: jdbc:mysql://121.40.224.146:3306/java4react-tanstack?useUnicode=true&characterEncoding=utf-8&charset=utf8mb4&serverTimezone=UTC
     username: root
     password: 1314woxihuanni
     driver-class-name: com.mysql.cj.jdbc.Driver

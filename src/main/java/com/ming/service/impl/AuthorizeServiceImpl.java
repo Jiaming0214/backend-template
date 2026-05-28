@@ -15,10 +15,7 @@ import com.ming.entity.RestBean;
 import com.ming.entity.auth.Role;
 import com.ming.entity.auth.User;
 import com.ming.exception.ServiceException;
-import com.ming.service.AuthorizeService;
-import com.ming.service.MenuService;
-import com.ming.service.RoleService;
-import com.ming.service.UserService;
+import com.ming.service.*;
 import com.ming.util.JWTUtil;
 import com.ming.vo.auth.MenuVO;
 import com.ming.vo.auth.RoleVO;
@@ -52,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 public class AuthorizeServiceImpl implements AuthorizeService {
     private final UserService userService;
     private final RoleService roleService;
-    private final MenuService menuService;
+    private final RoleMenuService roleMenuService;
     private final EmailConfiguration emailConfiguration;
     private final JWTConfiguration jwtConfiguration;
     private final MailSender mailSender;
@@ -111,13 +108,13 @@ public class AuthorizeServiceImpl implements AuthorizeService {
         }
 
         if (roleNames.contains("ADMIN")) {
-            menus = menuService.getAllMenu(null);
+            menus = roleMenuService.getMenusByRoleIds(null);
         } else {
             if (CollectionUtils.isEmpty(roleVOs)) {
                 menus = Lists.newArrayList();
             } else {
                 List<Long> roleIds = roleVOs.stream().map(RoleVO::getId).toList();
-                menus = menuService.getAllMenu(roleIds);
+                menus = roleMenuService.getMenusByRoleIds(roleIds);
             }
         }
         List<MenuVO> menuVOs = MenuConvert.INSTANCE.dtoList2voList(menus);

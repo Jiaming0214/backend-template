@@ -27,9 +27,6 @@ public class Menu {
     // 菜单前端路由
     private String path;
 
-    // 菜单组件路径
-    private String componentPath;
-
     // 菜单上级ID
     private Long parentId;
 

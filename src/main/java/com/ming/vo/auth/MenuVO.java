@@ -35,9 +35,6 @@ public class MenuVO {
     @NotBlank(message = "菜单前端路由不能为空")
     private String path;
 
-    // 菜单组件路径
-    private String componentPath;
-
     // 菜单上级ID
     private Long parentId;
 
